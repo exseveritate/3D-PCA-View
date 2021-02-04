@@ -1,0 +1,260 @@
+<html>
+<head>
+    <link rel="stylesheet" href="graphpca.css" />
+    <!-- Load plotly.js into the DOM -->
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <script>
+        
+        groups = [];
+        labels = [];
+        colors = [];
+        shapes = ["circle","circle-open","square","square-open","diamond","diamond-open", "cross"];
+        
+        srcrows = [];
+        
+        //options - PCs to view
+        xpc = 'PC1';
+        ypc = 'PC2';
+        zpc = 'PC3';
+        //option - show sample IDs
+        showid = false;
+        showidlbl = "Show IDs";
+        
+        theplot ={};
+        
+        //useful funcs
+        function randint(max) {
+            return Math.floor(Math.random() * max);
+        }
+    
+        function randchoice(arr) {
+            return arr[randint(arr.length)];
+        }
+    
+        function unpack(rows, key) {
+            return rows.map(function(row)
+            { return row[key]; });
+        }
+    
+        //func to define the buttons
+        function updbuttons() {
+            ubs = [
+            
+            {
+                name: 'Axes',
+                label: 'Axes',
+                type: 'dropdown',
+                //x: 0.0,
+                //y: 1.0,
+                //xanchor: 'left',
+                yanchor: 'top',
+                pad: {t:5, r:5, b:5, l:5},
+                
+                buttons: [
+                    
+                      {method: 'animate', execute:false, args:['PC1','PC2','PC3'], label: 'PC1-2-3'},
+                      {method: 'animate', execute:false, args:['PC1','PC2','PC4'], label: 'PC1-2-4'},
+                      {method: 'animate', execute:false, args:['PC1','PC2','PC5'], label: 'PC1-2-5'},
+                      {method: 'animate', execute:false, args:['PC1','PC2','PC6'], label: 'PC1-2-6'},
+                      {method: 'animate', execute:false, args:['PC1','PC3','PC4'], label: 'PC1-3-4'},
+                      {method: 'animate', execute:false, args:['PC1','PC3','PC5'], label: 'PC1-3-5'},
+                      {method: 'animate', execute:false, args:['PC1','PC3','PC6'], label: 'PC1-3-6'},
+                      {method: 'animate', execute:false, args:['PC1','PC4','PC5'], label: 'PC1-4-5'},
+                      {method: 'animate', execute:false, args:['PC1','PC4','PC6'], label: 'PC1-4-6'},
+                      {method: 'animate', execute:false, args:['PC1','PC5','PC6'], label: 'PC1-5-6'},
+                      {method: 'animate', execute:false, args:['PC2','PC3','PC4'], label: 'PC2-3-4'},
+                      {method: 'animate', execute:false, args:['PC2','PC3','PC5'], label: 'PC2-3-5'},
+                      {method: 'animate', execute:false, args:['PC2','PC3','PC6'], label: 'PC2-3-6'},
+                      {method: 'animate', execute:false, args:['PC2','PC4','PC5'], label: 'PC2-4-5'},
+                      {method: 'animate', execute:false, args:['PC2','PC4','PC6'], label: 'PC2-4-6'},
+                      {method: 'animate', execute:false, args:['PC2','PC5','PC6'], label: 'PC2-5-6'},
+                      {method: 'animate', execute:false, args:['PC3','PC4','PC5'], label: 'PC3-4-5'},
+                      {method: 'animate', execute:false, args:['PC3','PC4','PC6'], label: 'PC3-4-6'},
+                      {method: 'animate', execute:false, args:['PC3','PC5','PC6'], label: 'PC3-5-6'},
+                      {method: 'animate', execute:false, args:['PC4','PC5','PC6'], label: 'PC4-5-6'}
+                    ]
+                },
+                {
+                    name: 'toggleid',
+                    label: showid ? 'IDs ON' : 'IDs OFF',
+                    x: 0.1,
+                    //y: 0.0,
+                    yanchor: 'top',
+                    type: 'buttons',
+                    pad: {t:5, r:5, b:5, l:5},
+                    buttons: [
+                      {method:'skip',execute:false,label:showid ? 'IDs ON':'IDs OFF'}
+                    ]
+                },
+                ]
+            
+            return ubs;
+        }
+    
+        //func to change viewed PCs
+        function pcanimate() {
+            
+            var adata = [];
+            
+            for (i = 0;i < groups.length; ++i) {
+                var grpname = groups[i];
+                var grprows = srcrows.filter(x => x['Group'] == grpname);
+                
+                var trace = {
+                    x: unpack(grprows, xpc),
+                    y: unpack(grprows, ypc),
+                    z: unpack(grprows, zpc),
+                    ids: unpack(grprows, 'ID'),
+                    hoverinfo: showid ? 'name+text' : 'name',
+                };
+
+                adata[i] = trace;
+            }
+            var abtns = updbuttons();
+            
+            var alayout = {
+                updatemenus: abtns,
+                scene: {
+                    xaxis: { title: { text: xpc } },
+                    yaxis: { title: { text: ypc } },
+                    zaxis: { title: { text: zpc } }
+                },
+            };
+            
+            //Plot.ly doesn't actually animate this transition currently - just cuts
+            //leaving the transition code in, in case they add animation for 3d plots later
+            Plotly.animate('dvGraph', {
+                data: adata,
+                layout: alayout
+              }, {
+                fromcurrent: true,
+                transition: {
+                  duration: 1500,
+                  easing: 'cubic-in-out'
+                },
+                frame: {
+                  duration: 1500
+                }
+              });
+        }
+    
+        //func to change if IDs are shown
+        function toggleid() {
+            showid = !showid;
+            pcanimate();
+        }
+        
+        //load the palette
+        Plotly.d3.csv('plinkpalette.csv', function(err,data) {
+            console.log('loaded palette: ' + (err || ' OK'));
+            for(i=0;i<data.length;++i)
+            {
+                row = data[i];
+                groups[i] = row['Group'];
+                labels[i] = row['Label'];
+                colors[i] = row['Color'];
+            }
+            
+            //load the PCA data
+            Plotly.d3.csv('plinkeigenvec.csv', function(err, rows){
+                //save off rows
+                srcrows = rows;
+                
+                var data = [];
+                
+                for (i = 0;i < groups.length; ++i) {
+                    //is this group being highlighted? (will have black color)
+                    var showlbl = (colors[i] == "000000");
+                    
+                    var grpname = groups[i];
+                    var grpcol = '#' + colors[i];
+                    var grplbl = labels[i];
+                    var grprows = rows.filter(x => x['Group'] == grpname);
+                    var grpshp = showlbl? "x" : shapes[i % shapes.length];
+                    var grpids = unpack(grprows, 'ID');
+                    
+                    
+                    var trace = {
+                        x: unpack(grprows, xpc),
+                        y: unpack(grprows, ypc),
+                        z: unpack(grprows, zpc),
+                        ids: grpids,
+                        name: grplbl,
+                        
+                        text : showlbl ? grpname : null,
+                        
+                        hoverinfo: showid ? 'name+text' : 'name',
+                        hovertext: grpids,
+                        
+                        mode: showlbl ? 'markers+text' : 'markers',
+                        marker: {
+                            size: showlbl ? 8 : 8,
+                            color: grpcol,
+                            symbol: grpshp,
+                            opacity: 1, 
+                        },
+                        type: 'scatter3d'
+                    };
+
+                    data[i] = trace;
+                }
+                
+                var btn = updbuttons();
+                
+                var layout = {
+                        margin: {
+                            l: 0,
+                            r: 0,
+                            b: 0,
+                            t: 0
+                        },
+                        scene: {
+                            //fix me - this scales all PCs to same size
+                            //need unscaled option
+                            aspectmode: 'cube',
+                            xaxis: { title: { text: xpc } },
+                            yaxis: { title: { text: ypc } },
+                            zaxis: { title: { text: zpc } }
+                        },
+                        updatemenus: btn,
+                    
+                };
+                
+                //plot it
+                Plotly.newPlot('dvGraph', data, layout, {responsive: true});
+                theplot = document.getElementById('dvGraph');
+                theplot.on('plotly_afterplot', function(arg) {
+                    theloaddiv = document.getElementById('dvLoad');
+                    theloaddiv.style.visibility = 'hidden';
+                    console.log('finished plotting');
+                });
+                
+                //hook button click events
+                theplot.on('plotly_buttonclicked', function(arg) {
+                    if (arg.menu.name == 'Axes') {
+                        xpc = arg.button.args[0];
+                        ypc = arg.button.args[1];
+                        zpc = arg.button.args[2];
+                        }
+                    else if (arg.menu.name == 'toggleid') {
+                        showid = !showid;
+                    }
+                    pcanimate();
+                    
+                });
+            });
+        });
+    </script>
+    
+</head>
+
+<body>
+    <div id='dvGraph' class="graphDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div id='dvLoad' class="loadDiv">
+        <div class="loadMsg">Loading...</div>
+        <div class="loadMsgSm">(loading 5k samples takes a while)</div>
+        <div class="loadMsgSm">(buttons in top left change which 3 PCs are viewed)</div>
+        <div class="loadMsgSm">(follow @exseveitate on twitter for updates)</div>
+    </div>
+</body>
+</html>

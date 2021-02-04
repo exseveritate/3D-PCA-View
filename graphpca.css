@@ -1,0 +1,31 @@
+
+.graphDiv {
+    width: 100%;
+    height: 100%;
+}
+
+.loadDiv {
+    position: absolute;
+    width: 50%;
+    height: 25%;
+    top: 40%;
+    left: 50%;
+    margin-left: -25%;
+    background-color: #fff;
+    
+    text-align: center;
+}
+
+.loadMsg {
+    color: #000;
+    text-align: center;
+    font-family: 'Lucida Console','Courier','Monospace','Sans Serif';
+    font-size: 30pt;
+}
+
+.loadMsgSm {
+    color: #000;
+    text-align: center;
+    font-family: 'Lucida Console','Courier','Monospace','Sans Serif';
+    font-size: 20pt;
+}
