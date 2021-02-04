@@ -9,7 +9,7 @@ run the python script dataconvert.py in local dir to generate plinkeigenvec.csv 
 
 should work on any plink.eigenvec file with at least 6 PCs, but the palette algorithm only looks good if there are lots of groups which are spread out a bit on the PC axes
 
-the palette algorithm calculates an average eigenvector for each group, then converts the first 3 PCs of that average into an RGB color (normalized over the range present on each axis in the eigenvector file), adds some noise to disambiguate close goups, then rescales a little to make it look better.
+the palette algorithm calculates an average eigenvector for each group, then converts the first 3 PCs of that average into an RGB color (normalized over the range present on each axis in the eigenvector file), adds some noise to disambiguate close groups, then rescales a little to make it look better.
 
 ripped from my personal website so the loading message is specific to that
 
